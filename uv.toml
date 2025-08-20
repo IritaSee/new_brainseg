@@ -1,0 +1,5 @@
+[tools]
+python = { version = "3.9" }
+
+[venv]
+use-system-pip = false
