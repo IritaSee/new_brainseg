@@ -6,7 +6,7 @@
 # Install UV if not already installed
 if ! command -v uv &> /dev/null; then
     echo "Installing UV..."
-    curl -sSf https://astral.sh/uv/install.sh | sh
+    curl -LsSf https://astral.sh/uv/install.sh | sh
     # Add UV to path if not automatically added
     if ! grep -q "uv" ~/.zshrc; then
         echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
