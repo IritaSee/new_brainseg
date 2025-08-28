@@ -1,3 +1,8 @@
 DataBrainSeg
 DataBrainSeg.zip
 .DS_Store
+brain_env/
+__pycache__/
+.ipynb_checkpoints
+BraTS2020_TrainingData
+BraTS2020_ValidationData

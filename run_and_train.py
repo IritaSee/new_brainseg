@@ -15,7 +15,7 @@ run_test()
 
 EPOCHS = 10
 
-DATA_DIRECTORY = r"./DataBrainSeg/BraTS2020_TrainingData"
+DATA_DIRECTORY = r"./BraTS2020_TrainingData"
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 4
 VALIDATION_SPLIT = 0.15 # 15% data untuk validasi

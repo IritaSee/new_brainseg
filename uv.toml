@@ -1,5 +1,4 @@
-[tools]
-python = { version = "3.9" }
+python-preference = "only-managed"
 
-[venv]
+python = "3.9"
 use-system-pip = false
