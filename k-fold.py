@@ -12,6 +12,7 @@ from torch.utils.data import Subset, DataLoader
 from sklearn.model_selection import KFold
 import torch
 import torch.nn as nn
+from tqdm import tqdm
 
 
 # Dataset untuk memuat slice 2D tengah dari dataset BraTS2020. 
@@ -30,21 +31,23 @@ class BraTSDataset2D(Dataset):
         patient_dir_name = self.patient_dirs[idx]
         patient_path = os.path.join(self.base_path, patient_dir_name)
 
-        # Path untuk setiap modalitas citra
         flair_path = os.path.join(patient_path, f"{patient_dir_name}_flair.nii")
-        t1_path = os.path.join(patient_path, f"{patient_dir_name}_t1.nii")
-        t1ce_path = os.path.join(patient_path, f"{patient_dir_name}_t1ce.nii")
-        t2_path = os.path.join(patient_path, f"{patient_dir_name}_t2.nii")
-        seg_path = os.path.join(patient_path, f"{patient_dir_name}_seg.nii")
+        t1_path    = os.path.join(patient_path, f"{patient_dir_name}_t1.nii")
+        t1ce_path  = os.path.join(patient_path, f"{patient_dir_name}_t1ce.nii")
+        t2_path    = os.path.join(patient_path, f"{patient_dir_name}_t2.nii")
+        seg_path   = os.path.join(patient_path, f"{patient_dir_name}_seg.nii")
 
-        # Memuat data citra
         flair_img = nib.load(flair_path).get_fdata()
-        t1_img = nib.load(t1_path).get_fdata()
-        t1ce_img = nib.load(t1ce_path).get_fdata()
-        t2_img = nib.load(t2_path).get_fdata()
+        t1_img    = nib.load(t1_path).get_fdata()
+        t1ce_img  = nib.load(t1ce_path).get_fdata()
+        t2_img    = nib.load(t2_path).get_fdata()
+        # Robust mask loading: ensure integer, handle NaN, check file exists
+        if not os.path.exists(seg_path):
+            raise FileNotFoundError(f"Segmentation mask not found: {seg_path}")
         seg_mask = nib.load(seg_path).get_fdata()
+        seg_mask = np.nan_to_num(seg_mask, nan=0.0)
+        seg_mask = seg_mask.astype(np.int16)
 
-        # Mengambil slice tengah dari volume 3D
         mid_slice_idx = flair_img.shape[2] // 2
         image_stack = np.stack([
             flair_img[:, :, mid_slice_idx],
@@ -54,14 +57,10 @@ class BraTSDataset2D(Dataset):
         ], axis=0)
         seg_slice = seg_mask[:, :, mid_slice_idx]
 
-        # Konversi ke tensor PyTorch
         image_tensor = torch.tensor(image_stack, dtype=torch.float32)
         label_tensor = torch.tensor(seg_slice, dtype=torch.long)
-        
-        # Ganti label 4 menjadi 3 menggunakan masked_fill_ dengan mask boolean
-        label_tensor.masked_fill_(label_tensor == 4, 3)
-        
-        # Normalisasi sederhana per channel
+        label_tensor.masked_fill_((label_tensor == 4).to(torch.bool), 3)
+
         for i in range(image_tensor.shape[0]):
             max_val = torch.max(image_tensor[i])
             if max_val > 0:

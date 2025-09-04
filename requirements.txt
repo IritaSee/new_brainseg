@@ -1,5 +1,6 @@
-torch==1.13.1+cu117
-torchvision==0.14.1+cu117
+#issue in GPU, if want to try GPU, change to cu117
+torch==1.13.1+cpu
+torchvision==0.14.1+cpu
 torchaudio==0.13.1
 numpy>=1.20.0
 nibabel>=3.2.0
